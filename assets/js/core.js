@@ -1,7 +1,7 @@
 /* --- ASSETS/JS/CORE.JS --- */
 
 /**
- * SELAH CORE - Gerenciamento de Dados e Estado
+ * SELAH CORE - Gerenciamento de Dados e Estado (Sincronizado)
  */
 
 const CONFIG = {
@@ -52,14 +52,19 @@ const toast = {
 const store = {
     reviews: [],
     currentUser: null,
+    // Referência para desligar o listener do banco ao deslogar
+    dbUnsubscribe: null, 
     
     // Simula a existência de subjects para manter compatibilidade com engine legado
     subjects: [REFLECTION_SUBJECT], 
 
     load: (fromCloudData = null) => {
         if (fromCloudData) {
+            // Prioridade: Dados da Nuvem
+            console.log("☁️ Dados carregados da nuvem.");
             store.reviews = fromCloudData.reviews || [];
         } else {
+            // Fallback: Dados Locais (Offline)
             const raw = localStorage.getItem(CONFIG.storageKey);
             if (raw) {
                 try {
@@ -68,23 +73,38 @@ const store = {
                 } catch (e) { store.reviews = []; }
             }
         }
-        if (typeof ui !== 'undefined') ui.render();
+
+        if (typeof ui !== 'undefined') {
+            ui.render();
+            // Atualiza o Heatmap se o modal estiver aberto ou apenas para garantir consistência
+            const heatmapModal = document.getElementById('modal-heatmap');
+            if (ui.renderHeatmap && heatmapModal && !heatmapModal.classList.contains('hidden')) {
+                ui.renderHeatmap();
+            }
+        }
     },
 
     save: () => {
         const dataToSave = { reviews: store.reviews, lastUpdate: new Date().toISOString() };
+        
+        // 1. Salva Localmente (Backup imediato e persistência offline)
         localStorage.setItem(CONFIG.storageKey, JSON.stringify(dataToSave));
         
+        // 2. Salva na Nuvem (Apenas se o usuário estiver autenticado)
         if (store.currentUser && window.fireMethods && window.fireDb) {
             const { ref, set } = window.fireMethods;
-            set(ref(window.fireDb, 'users/' + store.currentUser.uid), dataToSave);
+            const userPath = 'users/' + store.currentUser.uid;
+            
+            set(ref(window.fireDb, userPath), dataToSave)
+                .then(() => console.log("☁️ Sincronizado com sucesso"))
+                .catch(err => console.error("Erro ao sincronizar com a nuvem", err));
         }
     },
 
     // --- Ações de Review ---
     addReviews: (newReviews) => {
         store.reviews = [...store.reviews, ...newReviews];
-        store.save();
+        store.save(); // Dispara persistência local e remota
         if (typeof ui !== 'undefined') ui.render();
     },
 
@@ -116,13 +136,13 @@ const store = {
         toast.show('Ciclo removido.');
     },
 
-    // --- Anexos HTML (Funcionalidade Transplantada) ---
+    // --- Anexos HTML (Funcionalidade de Sumário) ---
     attachSummary: (id, htmlContent) => {
         const target = store.reviews.find(r => r.id.toString() === id.toString());
         if (target) {
             const apply = (r) => { r.htmlSummary = htmlContent; };
             
-            // Propaga para o ciclo (batch) se existir, como no CicloSmart
+            // Propaga para o ciclo (batch) se existir
             if (target.batchId) {
                 store.reviews.forEach(r => { if (r.batchId === target.batchId) apply(r); });
             } else { 
@@ -175,4 +195,3 @@ const store = {
 };
 
 window.store = store;
-              
