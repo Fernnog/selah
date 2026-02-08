@@ -12,6 +12,14 @@ const app = {
         const form = document.getElementById('form-study');
         if(form) form.addEventListener('submit', app.handleNewEntry);
 
+        // --- CÓDIGO NOVO: Preenche a data de hoje automaticamente no input ---
+        // Garante que o usuário comece com a data atual, facilitando o registro.
+        const dateInput = document.getElementById('input-study-date');
+        if(dateInput && typeof getLocalISODate === 'function') {
+            dateInput.value = getLocalISODate();
+        }
+        // ---------------------------------------------------------------------
+
         // Listener de Autenticação
         app.initAuth();
         
