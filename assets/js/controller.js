@@ -70,12 +70,43 @@ const app = {
     },
 
     /**
-     * Solicita confirmação antes de remover uma reflexão do ciclo.
+     * Gerencia a exclusão de reflexões, permitindo remover um item único 
+     * ou o ciclo completo (batch) via modal de confirmação.
      */
-    confirmDelete: (id) => {
-        if(confirm("Deseja excluir esta reflexão? Se for parte de um ciclo, apenas este registro será removido.")) {
-            store.deleteReview(id);
+    openDeleteModal: (id, batchId) => {
+        const modal = document.getElementById('modal-delete');
+        if (!modal) return;
+
+        // Armazena referências nos metadados do elemento para os handlers de clique
+        modal.dataset.targetId = id;
+        modal.dataset.targetBatch = batchId;
+        
+        const btnOne = document.getElementById('btn-delete-one');
+        const btnBatch = document.getElementById('btn-delete-batch');
+        
+        // Configura o comportamento do botão para exclusão individual
+        if (btnOne) {
+            btnOne.onclick = () => {
+                store.deleteReview(id);
+                ui.toggleModal('modal-delete', false);
+            };
         }
+        
+        // Configura o comportamento do botão para exclusão do ciclo completo
+        if (btnBatch) {
+            btnBatch.onclick = () => {
+                if(batchId && batchId !== 'undefined' && batchId !== '') {
+                    store.deleteBatch(batchId);
+                } else {
+                    // Fallback para itens órfãos ou legados sem batchId
+                    alert("Este item não pertence a um ciclo rastreável. Excluindo apenas ele.");
+                    store.deleteReview(id);
+                }
+                ui.toggleModal('modal-delete', false);
+            };
+        }
+        
+        ui.toggleModal('modal-delete', true);
     },
 
     /**
