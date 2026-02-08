@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selah | Jornada de Reflexão</title>
     
-    <!-- ATUALIZADO: Caminho do Favicon para a pasta 'img' -->
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">    
     <meta name="theme-color" content="#ffffff">
     
@@ -16,17 +15,16 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, get, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
       
        const firebaseConfig = {
-          apiKey: "AIzaSyAGEj_PTWHgtHmZRQR2pMLs8Dq6POYpA34",
-          authDomain: "ciclosmart-11844.firebaseapp.com",
-          databaseURL: "https://ciclosmart-11844-default-rtdb.firebaseio.com",
-          projectId: "ciclosmart-11844",
-          storageBucket: "ciclosmart-11844.firebasestorage.app",
-          messagingSenderId: "311066999862",
-          appId: "1:311066999862:web:94bbf933ef5d09ddd96c97",
-          measurementId: "G-WNDQB3PKBB"
+          apiKey: "AIzaSyCCtvfcH-gwjijmEopkQPJd9j9wryqC7sM",
+  authDomain: "selah-4239f.firebaseapp.com",
+  projectId: "selah-4239f",
+  storageBucket: "selah-4239f.firebasestorage.app",
+  messagingSenderId: "701076978159",
+  appId: "1:701076978159:web:994dc9e7d56b4d95d0de1a",
+  measurementId: "G-JFE9HLB1TM"
         };
       
         try {
@@ -35,7 +33,17 @@
             const db = getDatabase(app);
             window.fireAuth = auth;
             window.fireDb = db;
-            window.fireMethods = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, ref, set, onValue, get };
+            window.fireMethods = { 
+                signInWithEmailAndPassword, 
+                createUserWithEmailAndPassword, 
+                signOut, 
+                onAuthStateChanged, 
+                ref, 
+                set, 
+                onValue, 
+                get,
+                off 
+            };
             window.dispatchEvent(new CustomEvent('firebase-ready'));
         } catch (e) {
             console.error("Erro Firebase", e);
@@ -46,7 +54,6 @@
 
     <header class="bg-white border-b border-stone-200 px-4 md:px-6 py-3 flex items-center justify-between shadow-sm z-20 shrink-0">
         <div class="flex items-center gap-3">
-            <!-- ATUALIZADO: Logo Imagem -->
             <div class="hidden lg:flex items-center justify-center">
                 <img src="img/logo.png" alt="Selah Logo" class="h-10 w-auto object-contain">
             </div>
@@ -65,7 +72,6 @@
                 <span class="hidden lg:inline">Radar Espiritual</span>
             </button>
             
-            <!-- ATUALIZADO: Adicionado onclick para abrir o modal -->
             <button id="btn-new-study" onclick="ui.toggleModal('modal-new', true)" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-stone-800 rounded-lg hover:bg-stone-700 shadow-md transition-all active:scale-95 outline-none">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 <span class="hidden lg:inline">Nova Reflexão</span>
