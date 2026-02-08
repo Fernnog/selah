@@ -20,8 +20,8 @@ const app = {
     },
 
     /**
-     * Processa a criação de uma nova reflexão espiritual.
-     * Simplificado para focar no conteúdo (Tema e Data).
+     * Processa a nova reflexão (Selah v1.0.0 Simplificado)
+     * Focado no conteúdo essencial: Data, Tema e Link.
      */
     handleNewEntry: (e) => {
         e.preventDefault();
@@ -33,16 +33,15 @@ const app = {
 
         // Validação obrigatória para o registro
         if(!dateInput.value || !topicInput.value) {
-            return alert("Por favor, preencha a data e o tema.");
+            return alert("Por favor, preencha a data e o tema da reflexão.");
         }
 
         // Preparação do objeto de dados
-        // 'time' e 'complexity' são mantidos com valores padrão para 
-        // garantir compatibilidade com o engine.js original.
         const data = {
             dateStr: dateInput.value,
             topic: topicInput.value,
-            link: linkInput.value,
+            link: linkInput.value || '',
+            // Valores padrão para compatibilidade com o engine.js original
             time: 0, 
             complexity: 'normal'
         };
@@ -54,7 +53,7 @@ const app = {
         ui.toggleModal('modal-new', false);
         e.target.reset();
         
-        // Define a data padrão para o dia atual após o salvamento
+        // Mantém a data de hoje como padrão para o próximo registro
         dateInput.value = getLocalISODate();
     },
 
