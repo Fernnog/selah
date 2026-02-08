@@ -13,7 +13,6 @@ const app = {
         if(form) form.addEventListener('submit', app.handleNewEntry);
 
         // --- CÓDIGO NOVO: Preenche a data de hoje automaticamente no input ---
-        // Garante que o usuário comece com a data atual, facilitando o registro.
         const dateInput = document.getElementById('input-study-date');
         if(dateInput && typeof getLocalISODate === 'function') {
             dateInput.value = getLocalISODate();
@@ -34,34 +33,27 @@ const app = {
     handleNewEntry: (e) => {
         e.preventDefault();
         
-        // Seleção de elementos do DOM
         const dateInput = document.getElementById('input-study-date');
         const topicInput = document.getElementById('input-topic');
         const linkInput = document.getElementById('input-study-link');
 
-        // Validação obrigatória para o registro
         if(!dateInput.value || !topicInput.value) {
             return alert("Por favor, preencha a data e o tema da reflexão.");
         }
 
-        // Preparação do objeto de dados
         const data = {
             dateStr: dateInput.value,
             topic: topicInput.value,
             link: linkInput.value || '',
-            // Valores padrão para compatibilidade com o engine.js original
             time: 0, 
             complexity: 'normal'
         };
 
-        // Dispara o motor de agendamento (24h, 7d, 30d)
         engine.processEntry(data);
         
-        // Reset da Interface
         ui.toggleModal('modal-new', false);
         e.target.reset();
         
-        // Mantém a data de hoje como padrão para o próximo registro
         dateInput.value = getLocalISODate();
     },
 
@@ -87,53 +79,127 @@ const app = {
     },
 
     /**
-     * Gerenciador de Autenticação Firebase.
-     * Mantém o estado do usuário e sincroniza com o Cloud Firestore.
+     * Gerenciador de Autenticação Firebase e Sincronização em Tempo Real.
      */
     initAuth: () => {
-        if (!window.fireMethods) return;
-        const { onAuthStateChanged, signInWithEmailAndPassword, signOut } = window.fireMethods;
+        if (!window.fireMethods) {
+            console.error("Firebase não inicializado.");
+            return;
+        }
+
+        const { 
+            onAuthStateChanged, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            ref, 
+            onValue 
+        } = window.fireMethods;
+        
         const auth = window.fireAuth;
         const db = window.fireDb;
-        const { ref, get } = window.fireMethods;
 
+        // Elementos da UI
         const btnUser = document.getElementById('user-menu-btn');
         const popover = document.getElementById('auth-popover');
         const viewLogin = document.getElementById('auth-view-login');
         const viewUser = document.getElementById('auth-view-user');
+        const statusDot = document.getElementById('user-status-dot');
+        const emailDisplay = document.getElementById('popover-user-email');
 
-        btnUser.onclick = () => popover.classList.toggle('hidden');
-
-        onAuthStateChanged(auth, (user) => {
-            store.currentUser = user;
-            if(user) {
-                viewLogin.classList.add('hidden');
-                viewUser.classList.remove('hidden');
-                document.getElementById('popover-user-email').innerText = user.email;
-                document.getElementById('user-status-dot').classList.remove('hidden');
-                
-                // Sincronização com Nuvem
-                const userRef = ref(db, 'users/' + user.uid);
-                get(userRef).then(snap => {
-                    if(snap.exists()) store.load(snap.val());
-                    else store.save(); 
-                });
-            } else {
-                viewLogin.classList.remove('hidden');
-                viewUser.classList.add('hidden');
-                document.getElementById('user-status-dot').classList.add('hidden');
-                store.load(null); 
+        // Toggle do Popover
+        btnUser.onclick = (e) => {
+            e.stopPropagation();
+            popover.classList.toggle('hidden');
+        };
+        
+        // Fechar popover ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!popover.contains(e.target) && !btnUser.contains(e.target)) {
+                popover.classList.add('hidden');
             }
         });
 
-        document.getElementById('auth-form-popover').onsubmit = (e) => {
+        // LISTENER DE ESTADO DE AUTENTICAÇÃO
+        onAuthStateChanged(auth, (user) => {
+            store.currentUser = user;
+            
+            if (user) {
+                // --- USUÁRIO LOGADO ---
+                viewLogin.classList.add('hidden');
+                viewUser.classList.remove('hidden');
+                emailDisplay.innerText = user.email;
+                
+                // Indicador Visual (Verde = Online)
+                statusDot.classList.remove('hidden');
+                statusDot.classList.add('bg-emerald-500', 'border-emerald-100');
+                statusDot.classList.remove('bg-stone-400', 'border-white');
+
+                // Conectar ao Banco de Dados em Tempo Real
+                const userRef = ref(db, 'users/' + user.uid);
+                
+                // onValue escuta mudanças na nuvem em tempo real
+                const unsubscribe = onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        store.load(data);
+                        if (typeof toast !== 'undefined') toast.show('Sincronizado com a nuvem.', 'success');
+                    } else {
+                        // Primeiro login: sincroniza o local atual para a nuvem
+                        store.save();
+                    }
+                });
+                
+                store.dbUnsubscribe = unsubscribe;
+
+            } else {
+                // --- USUÁRIO DESLOGADO ---
+                viewLogin.classList.remove('hidden');
+                viewUser.classList.add('hidden');
+                statusDot.classList.add('hidden');
+                
+                if (store.dbUnsubscribe) store.dbUnsubscribe();
+                
+                store.load(null);
+            }
+        });
+
+        // AÇÃO DE LOGIN
+        const formLogin = document.getElementById('auth-form-popover');
+        formLogin.onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('popover-email').value;
             const pass = document.getElementById('popover-pass').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Erro: " + err.message));
+            const btnSubmit = formLogin.querySelector('button');
+            const originalText = btnSubmit.innerText;
+
+            try {
+                btnSubmit.innerText = "Entrando...";
+                btnSubmit.disabled = true;
+                
+                await signInWithEmailAndPassword(auth, email, pass);
+                
+                popover.classList.add('hidden');
+                formLogin.reset();
+                if (typeof toast !== 'undefined') toast.show(`Bem-vindo, ${email}`, 'success');
+            } catch (err) {
+                alert("Erro ao entrar: Verifique e-mail e senha.\n(" + err.code + ")");
+            } finally {
+                btnSubmit.innerText = originalText;
+                btnSubmit.disabled = false;
+            }
         };
 
-        document.getElementById('btn-logout-popover').onclick = () => signOut(auth);
+        // AÇÃO DE LOGOUT
+        const btnLogout = document.getElementById('btn-logout-popover');
+        if (btnLogout) {
+            btnLogout.onclick = () => {
+                if(confirm("Deseja sair? Seus dados permanecerão salvos neste navegador.")) {
+                    signOut(auth);
+                    popover.classList.add('hidden');
+                    if (typeof toast !== 'undefined') toast.show('Desconectado.');
+                }
+            };
+        }
     }
 };
 
