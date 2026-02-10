@@ -1,4 +1,4 @@
-/* --- SELAH STYLE (v1.1) --- */
+/* --- SELAH STYLE (v1.2) --- */
 /* Identidade: Sereno, Leitura, Reflexão (Stone & Amber) */
 
 /* 1. Configurações Globais */
@@ -142,4 +142,26 @@ button:active {
 .status-connected {
     background-color: #22c55e; /* green-500 - Conectado */
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+/* 13. Ações dos Cards (Refinamento Visual e de Segurança) */
+/* Implementa o espaçamento e o divisor sutil entre botões de ação */
+
+.action-include {
+    position: relative; /* Necessário para posicionar o divisor ::after */
+    margin-right: 20px; /* Cria área de respiro para evitar cliques acidentais no mobile */
+}
+
+.action-include::after {
+    content: '';
+    position: absolute;
+    right: -10px; /* Centralizado no espaço de 20px */
+    top: 15%;     /* Alinhamento vertical elegante */
+    height: 70%;  /* Altura parcial para visual moderno */
+    width: 1px;
+    background-color: rgba(0, 0, 0, 0.1); /* Divisor sutil e transparente */
+}
+
+.action-delete {
+    margin-left: 0; /* Garante que não haja conflito de margens com o include */
 }
