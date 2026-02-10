@@ -17,6 +17,41 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 
+    <style>
+        /* REFINAMENTO VISUAL DOS BOTÕES DE AÇÃO DOS CARDS */
+        
+        /* 1. Espaço de segurança e posicionamento para o divisor */
+        .action-include {
+            position: relative;
+            margin-right: 20px; /* Distanciamento para evitar cliques acidentais */
+        }
+
+        /* 2. Implementação da Linha Divisória (Pseudo-elemento) */
+        .action-include::after {
+            content: '';
+            position: absolute;
+            right: -10px; /* Centralizado no gap de 20px */
+            top: 15%;
+            height: 70%;
+            width: 1px;
+            background-color: rgba(0, 0, 0, 0.1); /* Sutil e elegante */
+        }
+
+        /* 3. Ajuste de margem do botão de exclusão */
+        .action-delete {
+            margin-left: 0;
+        }
+
+        /* Melhoria de UX: Garantir área de toque mínima para mobile */
+        .btn-icon {
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+
     <script type="module">
         // 1. IMPORTAÇÕES REFINADAS (Firestore Modular SDK)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
