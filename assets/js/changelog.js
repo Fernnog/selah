@@ -1,6 +1,14 @@
 /* --- ASSETS/JS/CHANGELOG.JS --- */
 const changelogData = [
     {
+        version: '1.0.2',
+        date: '10/02/2026',
+        changes: [
+            '📊 <b>Indicadores de Ciclo:</b> Adição de badges visuais (24h, 7d, 30d) para identificação imediata do período de revisão diretamente nos cards.',
+            '🤖 <b>Versionamento Automático:</b> Implementação da lógica que sincroniza a versão exibida no cabeçalho com a entrada mais recente deste histórico.'
+        ]
+    },
+    {
         version: '1.0.1',
         date: '08/02/2026',
         changes: [
