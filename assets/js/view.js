@@ -1,7 +1,7 @@
 /* --- ASSETS/JS/VIEW.JS --- */
 /**
  * UI RENDERER - Camada Visual Selah
- * Versão: 1.1.1 - Implementação de Indicadores de Ciclo e Versão Automática
+ * Versão: 1.1.2 - Ajuste de Layout nos Botões de Ação (Mobile)
  */
 
 const ui = {
@@ -111,31 +111,34 @@ const ui = {
         const titleClass = isDone ? 'text-stone-400 line-through' : 'text-stone-800 font-bold';
 
         // LÓGICA DE DATAS
-        // 1. Data de Criação (Fixa) - Se não existir no dado antigo, usa a própria date como fallback
         const displayCreation = review.creationDate ? formatDateDisplay(review.creationDate) : formatDateDisplay(review.date);
-        // 2. Data da Revisão (Agendada)
         const displayScheduled = formatDateDisplay(review.date);
 
-        // --- NOVO BLOCO: Lógica do Badge de Período ---
+        // Badge de Período
         const isCycle = review.type && review.type !== 'ORIGEM';
         const periodBadge = isCycle 
             ? `<span class="bg-stone-600 text-stone-50 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm mr-2" title="Ciclo de Revisão">${review.type}</span>` 
             : '';
 
-        // LÓGICA DO ANEXO INTELIGENTE
+        // LÓGICA DO ANEXO INTELIGENTE COM O NOVO LAYOUT
         const hasSummary = review.htmlSummary && review.htmlSummary.length > 0;
         const hasSumString = hasSummary ? 'true' : 'false';
 
         const summaryIcon = hasSummary ? 'file-text' : 'upload-cloud';
+        
+        // Aplica a classe de espaçamento e divisor APENAS se houver resumo
+        const actionIncludeClass = hasSummary ? 'action-include' : '';
+
         const summaryClass = hasSummary 
             ? "text-emerald-700 bg-emerald-100 border-emerald-300 hover:bg-emerald-200" 
             : "text-stone-400 bg-stone-50 border-transparent hover:text-emerald-500 hover:border-emerald-200 hover:bg-emerald-50";
             
         const summaryTitle = hasSummary ? "Ler Reflexão Anexada" : "Anexar Resumo HTML";
 
+        // Inclusão da classe 'action-delete' para o layout mobile
         const deleteSummaryHtml = hasSummary ? `
             <button onclick="store.deleteSummary('${review.id}'); event.stopPropagation();"
-                    class="w-6 h-6 flex items-center justify-center rounded-full border border-red-100 bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition-all ml-1" 
+                    class="w-6 h-6 flex items-center justify-center rounded-full border border-red-100 bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition-all action-delete" 
                     title="Remover Anexo">
                 <i data-lucide="file-x" class="w-3 h-3"></i>
             </button>` : '';
@@ -172,7 +175,7 @@ const ui = {
                         
                         <div class="flex items-center gap-1 bg-stone-50 rounded-full pr-1">
                             <button onclick="fileManager.handleAction('${review.id}', ${hasSumString}); event.stopPropagation();"
-                                    class="w-7 h-7 flex items-center justify-center rounded-full border transition-all ${summaryClass}" 
+                                    class="w-7 h-7 flex items-center justify-center rounded-full border transition-all ${summaryClass} ${actionIncludeClass}" 
                                     title="${summaryTitle}">
                                 <i data-lucide="${summaryIcon}" class="w-3.5 h-3.5"></i>
                             </button>
