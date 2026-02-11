@@ -145,23 +145,33 @@ button:active {
 }
 
 /* 13. Ações dos Cards (Refinamento Visual e de Segurança) */
-/* Implementa o espaçamento e o divisor sutil entre botões de ação */
 
+/* 1. Botão "Incluir" (Verde): Aumentamos o espaço lateral */
 .action-include {
-    position: relative; /* Necessário para posicionar o divisor ::after */
-    margin-right: 20px; /* Cria área de respiro para evitar cliques acidentais no mobile */
+    position: relative !important;
+    /* Aumentado de 20px para 30px para dar mais respiro */
+    margin-right: 30px !important; 
 }
 
+/* 2. A Linha Divisória: Agora centralizada matematicamente */
 .action-include::after {
     content: '';
     position: absolute;
-    right: -10px; /* Centralizado no espaço de 20px */
-    top: 15%;     /* Alinhamento vertical elegante */
-    height: 70%;  /* Altura parcial para visual moderno */
-    width: 1px;
-    background-color: rgba(0, 0, 0, 0.1); /* Divisor sutil e transparente */
+    
+    /* O SEGREDO DO CENTRO: Este valor deve ser sempre METADE do margin-right acima */
+    right: -15px; 
+    
+    /* Centralização Vertical e Estilo */
+    top: 20%;      /* Começa um pouco abaixo do topo */
+    height: 60%;   /* Altura da linha */
+    width: 1px;    /* Espessura fina */
+    background-color: rgba(0, 0, 0, 0.15); /* Cor cinza sutil */
+    pointer-events: none;
 }
 
+/* 3. Botão "Excluir" (Vermelho): Mantém sem margem extra à esquerda */
 .action-delete {
-    margin-left: 0; /* Garante que não haja conflito de margens com o include */
+    margin-left: 0 !important;
 }
+
+    
